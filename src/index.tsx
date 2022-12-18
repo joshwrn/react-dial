@@ -20,7 +20,6 @@ const Wrapper = styled(motion.div)`
     padding: 0;
   }
 `
-
 const Notches = styled.div`
   width: 400px;
   height: 400px;
@@ -30,7 +29,6 @@ const Notches = styled.div`
   transition: opacity 0.5s;
   background-image: url("data:image/svg+xml,%3csvg width='50%25' height='50%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='100' ry='100' stroke='%23FFFFFF' stroke-width='4' stroke-dasharray='1%2c 13' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e");
 `
-
 const Container = styled.div`
   width: 300px;
   height: 300px;
@@ -80,7 +78,7 @@ const TextWrapper = styled.div`
     color: #ffffff8a;
   }
 `
-const Handle = styled(motion.div)<{ coords: { x: number; y: number } }>`
+const Handle = styled(motion.div)<{ pos: number }>`
   width: 25px;
   height: 25px;
   border-radius: 50%;
@@ -89,7 +87,7 @@ const Handle = styled(motion.div)<{ coords: { x: number; y: number } }>`
   cursor: pointer;
   position: absolute;
   box-shadow: 0 0 15px 0px #0084ff7d;
-  transform: translateY(${({ coords }) => coords.y}px);
+  transform: translateY(${({ pos }) => pos}px);
 `
 const Grab = styled.div`
   position: absolute;
@@ -103,7 +101,7 @@ const NotchesLight = styled(Notches)`
   filter: blur(4px);
   opacity: 0;
 `
-const Outer = styled.div`
+const Outer = styled.div<{ isDragging: boolean }>`
   width: 500px;
   height: 500px;
   border-radius: 50%;
@@ -112,6 +110,12 @@ const Outer = styled.div`
   justify-content: center;
   align-items: center;
   border: 2px solid rgba(255, 255, 255, 0.187);
+  ${Notches} {
+    opacity: ${({ isDragging }) => (isDragging ? 0.75 : 0.4)};
+  }
+  ${NotchesLight} {
+    opacity: ${({ isDragging }) => (isDragging ? 0.75 : 0)};
+  }
   :hover {
     ${Notches} {
       opacity: 0.75;
@@ -119,78 +123,80 @@ const Outer = styled.div`
   }
 `
 
-const toRads = (deg: number) => {
-  return deg * (Math.PI / 180)
-}
-const toDeg = (rad: number) => {
-  return rad * (180 / Math.PI)
-}
-type WrapAround = (value: number, range: [min: number, max: number]) => number
-export const wrapAround: WrapAround = (value, [min, max]) =>
-  ((((value - min) % (max - min)) + (max - min)) % (max - min)) + min
-const inCircle = (num: number) => {
-  const res = wrapAround(toDeg(num), [0 - 180, 360 - 180])
-  return toRads(res)
-}
-
-export const Dial: FC = () => {
-  const [rads, setRads] = useState(toRads(-90))
-  // const [coords, setCoords] = useState({ x: 0, y: 0 })
+export const Dial: FC<{
+  max?: number
+  min?: number
+  increment?: number
+  initial?: number
+  showNotches?: boolean
+}> = ({
+  max = 360,
+  min = 0,
+  increment = 45,
+  initial = 0,
+  showNotches = true,
+}) => {
+  const [deg, setDeg] = useState(initial)
+  const [handlePos, setHandlePos] = useState(0)
   const [diff, setDiff] = useState(0)
   const dragRef = useRef(null)
   const handleRef = useRef<HTMLDivElement>(null)
   const dialRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleDrag = (f: DraggableEvent, d: DraggableData) => {
     setDiff((prev) => prev + d.deltaX)
   }
 
   useEffect(() => {
-    if (!handleRef.current) return
-    const increase = toRads(45)
+    const el = dialRef.current
+    const h = handleRef.current
+    if (!el || !h) return
+    setHandlePos(el.offsetHeight / 2 - h.offsetHeight)
+  }, [dialRef, handleRef])
 
-    if (diff > 75) {
+  useEffect(() => {
+    if (!handleRef.current) return
+    const increase = increment
+    if (diff >= increment) {
       setDiff(0)
-      setRads((prev) => prev + increase)
+      setDeg((prev) => (prev >= max ? prev : prev + increase))
     }
-    if (diff < -75) {
+    if (diff <= -increment) {
       setDiff(0)
-      setRads((prev) => prev - increase)
+      setDeg((prev) => (prev <= min ? prev : prev - increase))
     }
   }, [diff])
 
-  // useEffect(() => {
-  //   const element = dialRef.current
-  //   const handle = handleRef.current
-  //   if (!element || !handle) return
-  //   const handleSize = handle.offsetHeight
-  //   const height = element.offsetHeight
-
-  //   const x = Math.cos(rads) * (height / 2 - handleSize)
-  //   const y = Math.sin(rads) * (height / 2 - handleSize)
-  //   setCoords({ x, y })
-  // }, [setCoords, rads])
-
   return (
     <Wrapper>
-      <Outer>
-        <Gradient />
-        <Notches />
-        <NotchesLight />
+      <Outer isDragging={isDragging}>
+        {showNotches && (
+          <>
+            <Gradient />
+            <Notches />
+            <NotchesLight />
+          </>
+        )}
         <Container>
           <Inner
             style={{
-              transform: `rotate(${rads}rad)`,
+              transform: `rotate(${deg}deg)`,
             }}
             ref={dialRef}
           >
-            <Handle ref={handleRef} coords={{ x: 0, y: -125 }} />
+            <Handle ref={handleRef} pos={handlePos} />
           </Inner>
           <TextWrapper>
-            <h3>{Math.round(toDeg(rads) + 180)}</h3>
+            <h3>{Math.round(deg)}</h3>
             <p>Degrees</p>
           </TextWrapper>
-          <DraggableCore onDrag={handleDrag} ref={dragRef}>
+          <DraggableCore
+            onStart={() => setIsDragging(true)}
+            onStop={() => setIsDragging(false)}
+            onDrag={handleDrag}
+            ref={dragRef}
+          >
             <Grab />
           </DraggableCore>
         </Container>

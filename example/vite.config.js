@@ -11,7 +11,7 @@ export default ({ mode }) => {
         injectReact: process.env.VITE_NODE_ENV === `production` ? true : false,
       }),
     ],
-    base: `/react-spotlight-cursor/`,
+    base: `/react-dial/`,
     server: {
       fs: {
         allow: [`..`],
