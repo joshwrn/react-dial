@@ -71,7 +71,6 @@
   "dependencies": {
     "@react-hook/resize-observer": "^1.2.6",
     "@types/styled-components": "^5.1.26",
-    "framer-motion": "^7.6.19",
     "react-draggable": "^4.4.5",
     "styled-components": "^5.3.6"
   }
