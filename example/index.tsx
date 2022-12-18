@@ -61,6 +61,10 @@ const Inputs = styled.div`
 const Container = styled.div`
   width: 500px;
   height: 500px;
+  max-width: 50vw;
+  max-height: 90vh;
+  min-width: 250px;
+  min-height: 250px;
   resize: both;
   overflow: hidden;
   position: relative;
