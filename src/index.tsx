@@ -162,7 +162,7 @@ export const Dial: FC<{
 
   useEffect(() => {
     if (!handleRef.current) return
-    const increase = increment
+    const increase = increment * Math.floor(Math.abs(diff) / increment)
     if (diff >= increment) {
       setDiff(0)
       setDeg((prev) => (prev + increase <= max ? prev + increase : prev))
