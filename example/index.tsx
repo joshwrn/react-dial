@@ -85,10 +85,16 @@ const App = () => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(360)
   const [increment, setIncrement] = useState(45)
+  const [realisticDrag, setRealisticDrag] = useState(false)
   return (
     <Wrapper>
       <Container>
-        <Dial min={min} max={max} increment={increment} />
+        <Dial
+          min={min}
+          max={max}
+          increment={increment}
+          realisticDrag={realisticDrag}
+        />
       </Container>
       <Inputs>
         <div>
@@ -113,6 +119,14 @@ const App = () => {
             value={increment}
             onChange={(e) => setIncrement(Number(e.target.value))}
             type="number"
+          />
+        </div>
+        <div>
+          <p>Realistic Drag</p>
+          <input
+            checked={realisticDrag}
+            onChange={(e) => setRealisticDrag(e.target.checked)}
+            type="checkbox"
           />
         </div>
       </Inputs>

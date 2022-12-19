@@ -131,12 +131,14 @@ export const Dial: FC<{
   increment?: number
   initial?: number
   showNotches?: boolean
+  realisticDrag?: boolean
 }> = ({
   max = 360,
   min = 0,
   increment = 45,
   initial = 0,
   showNotches = true,
+  realisticDrag = false,
 }) => {
   const [deg, setDeg] = useState(
     min > initial ? min : max < initial ? max : initial
@@ -149,9 +151,14 @@ export const Dial: FC<{
   const size = useSize(dialRef)
   const [isDragging, setIsDragging] = useState(false)
 
+  const handleRealisticDrag = (f: DraggableEvent, d: DraggableData) => {
+    const y = deg < 180 ? -d.deltaY : d.deltaY
+    const x = deg < 90 || deg > 270 ? -d.deltaX : d.deltaX
+    setDiff((prev) => prev + x / 2 + y / 2)
+  }
+
   const handleDrag = (f: DraggableEvent, d: DraggableData) => {
-    const y = -d.deltaY
-    setDiff((prev) => prev + d.deltaX + y)
+    setDiff((prev) => prev + d.deltaX + -d.deltaY)
   }
 
   useEffect(() => {
@@ -200,7 +207,7 @@ export const Dial: FC<{
             <DraggableCore
               onStart={() => setIsDragging(true)}
               onStop={() => setIsDragging(false)}
-              onDrag={handleDrag}
+              onDrag={realisticDrag ? handleRealisticDrag : handleDrag}
               ref={dragRef}
             >
               <Grab />
