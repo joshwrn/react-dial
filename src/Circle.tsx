@@ -14,8 +14,7 @@ export const useSize = (
     setSize(target.current.getBoundingClientRect())
   }, [target])
 
-  // Where the magic happens
-  useResizeObserver(target, (entry: any) => setSize(entry?.contentRect))
+  useResizeObserver(target, (entry) => setSize(entry?.contentRect))
   return size
 }
 
