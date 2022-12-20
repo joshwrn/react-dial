@@ -105,7 +105,7 @@ const App = () => {
   const [increment, setIncrement] = useState(45)
   const [realisticDrag, setRealisticDrag] = useState(false)
   const [degrees, setDegrees] = useState(0)
-  const [showProgress, setShowProgress] = useState(false)
+  const [showProgress, setShowProgress] = useState(true)
   return (
     <Wrapper>
       <Container>
