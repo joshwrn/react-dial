@@ -105,6 +105,7 @@ const App = () => {
   const [increment, setIncrement] = useState(45)
   const [realisticDrag, setRealisticDrag] = useState(false)
   const [degrees, setDegrees] = useState(0)
+  const [showProgress, setShowProgress] = useState(false)
   return (
     <Wrapper>
       <Container>
@@ -115,6 +116,7 @@ const App = () => {
           realisticDrag={realisticDrag}
           degrees={degrees}
           setDegrees={setDegrees}
+          showProgress={showProgress}
         >
           <TextWrapper>
             <h3>{Math.round(degrees)}</h3>
@@ -152,6 +154,14 @@ const App = () => {
           <input
             checked={realisticDrag}
             onChange={(e) => setRealisticDrag(e.target.checked)}
+            type="checkbox"
+          />
+        </div>
+        <div>
+          <p>Show Progress</p>
+          <input
+            checked={showProgress}
+            onChange={(e) => setShowProgress(e.target.checked)}
             type="checkbox"
           />
         </div>

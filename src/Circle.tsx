@@ -90,7 +90,7 @@ export const CircleDiv: FC<{
   accentColors = [`#ff0000`, `#00ff00`],
   progress = 50,
   children,
-  size = `60%`,
+  size = `calc(100% + 8px)`,
   cursor = `pointer`,
   stroke = 4,
 }) => {
@@ -127,6 +127,7 @@ const Wrapper = styled.div<{ size: string; cursor: string }>`
   align-items: center;
   position: absolute;
   flex-shrink: 0;
+  z-index: -5;
   width: ${({ size }) => size};
   height: ${({ size }) => size};
   cursor: ${({ cursor }) => cursor};

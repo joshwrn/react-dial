@@ -1,14 +1,11 @@
-import type { FC } from "react"
+import type { CSSProperties, FC } from "react"
 import { useEffect, useRef, useState } from "react"
 
 import type { DraggableData, DraggableEvent } from "react-draggable"
 import { DraggableCore } from "react-draggable"
-import type { FlattenInterpolation, ThemeProps } from "styled-components"
 import styled from "styled-components"
 
 import { CircleDiv, useSize } from "./Circle"
-
-export type CSSProps = FlattenInterpolation<ThemeProps<unknown>> | undefined
 
 const BG = `#e0e0e0`
 
@@ -108,6 +105,9 @@ export const Dial: FC<{
   children?: JSX.Element
   degrees: number
   setDegrees: React.Dispatch<React.SetStateAction<number>>
+  showProgress?: boolean
+  dialStyle?: CSSProperties
+  handleStyle?: CSSProperties
 }> = ({
   max = 360,
   min = 0,
@@ -117,6 +117,9 @@ export const Dial: FC<{
   degrees = 0,
   setDegrees,
   children,
+  showProgress = true,
+  dialStyle,
+  handleStyle,
 }) => {
   const [handlePos, setHandlePos] = useState(0)
   const [diff, setDiff] = useState(0)
@@ -139,8 +142,9 @@ export const Dial: FC<{
   useEffect(() => {
     const h = handleRef.current
     if (!h || !size) return
+
     setHandlePos(size.width / 2 - h.offsetHeight)
-  }, [size])
+  }, [size, showProgress])
 
   useEffect(() => {
     if (!handleRef.current) return
@@ -185,27 +189,31 @@ export const Dial: FC<{
             </svg>
           </>
         )}
-        <CircleDiv progress={(degrees / 360) * 100}>
-          <DialContainer>
-            <HandleContainer
-              style={{
-                transform: `rotate(${degrees}deg)`,
-              }}
-              ref={dialRef}
-            >
-              <Handle ref={handleRef} pos={handlePos} />
-            </HandleContainer>
-            <ChildWrapper>{children}</ChildWrapper>
-            <DraggableCore
-              onStart={() => setIsDragging(true)}
-              onStop={() => setIsDragging(false)}
-              onDrag={realisticDrag ? handleRealisticDrag : handleDrag}
-              ref={dragRef}
-            >
-              <StyledDial />
-            </DraggableCore>
-          </DialContainer>
-        </CircleDiv>
+        <DialContainer
+          style={{
+            width: `60%`,
+            height: `60%`,
+          }}
+        >
+          <HandleContainer
+            style={{
+              transform: `rotate(${degrees}deg)`,
+            }}
+            ref={dialRef}
+          >
+            <Handle style={handleStyle} ref={handleRef} pos={handlePos} />
+          </HandleContainer>
+          <ChildWrapper>{children}</ChildWrapper>
+          <DraggableCore
+            onStart={() => setIsDragging(true)}
+            onStop={() => setIsDragging(false)}
+            onDrag={realisticDrag ? handleRealisticDrag : handleDrag}
+            ref={dragRef}
+          >
+            <StyledDial style={dialStyle} />
+          </DraggableCore>
+          {showProgress && <CircleDiv progress={(degrees / 360) * 100} />}
+        </DialContainer>
       </Outer>
     </Wrapper>
   )
