@@ -14,7 +14,7 @@ const Wrapper = styled.div`
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  background-color: #989898;
+  background-color: #e0e0e0;
   margin: 0;
   padding: 0;
   position: absolute;
@@ -81,11 +81,30 @@ const Container = styled.div`
   }
 `
 
+const FC = `#57575789`
+
+const TextWrapper = styled.div`
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  h3 {
+    font-size: 32px;
+    color: ${FC};
+  }
+  p {
+    font-size: 15px;
+    color: ${FC};
+  }
+`
+
 const App = () => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(360)
   const [increment, setIncrement] = useState(45)
   const [realisticDrag, setRealisticDrag] = useState(false)
+  const [degrees, setDegrees] = useState(0)
   return (
     <Wrapper>
       <Container>
@@ -94,7 +113,14 @@ const App = () => {
           max={max}
           increment={increment}
           realisticDrag={realisticDrag}
-        />
+          degrees={degrees}
+          setDegrees={setDegrees}
+        >
+          <TextWrapper>
+            <h3>{Math.round(degrees)}</h3>
+            <p>Degrees</p>
+          </TextWrapper>
+        </Dial>
       </Container>
       <Inputs>
         <div>

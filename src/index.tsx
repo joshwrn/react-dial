@@ -10,6 +10,8 @@ import { CircleDiv, useSize } from "./Circle"
 
 export type CSSProps = FlattenInterpolation<ThemeProps<unknown>> | undefined
 
+const BG = `#e0e0e0`
+
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -20,18 +22,9 @@ const Wrapper = styled.div`
     padding: 0;
   }
 `
-const Notches = styled.div`
-  width: 80%;
-  height: 80%;
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.4;
-  transition: opacity 0.5s;
-  background-image: url("data:image/svg+xml,%3csvg width='50%25' height='50%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='100' ry='100' stroke='%23333' stroke-width='4' stroke-dasharray='1%2c 13' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e");
-`
-const Container = styled.div`
-  width: 96%;
-  height: 96%;
+const DialContainer = styled.div`
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -40,47 +33,40 @@ const Container = styled.div`
   position: relative;
   z-index: 2;
 `
-const Inner = styled.div`
+const HandleContainer = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(#eeeeee, #c2c2c2);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   position: relative;
-  box-shadow: 0 0 40px 1px #84848418;
-  border: 1px solid rgb(255, 255, 255, 0.05);
   transition: transform 0.15s;
+  pointer-events: none;
 `
 const Gradient = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 50%;
   position: absolute;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 40%, #c5c5c5 90%);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 40%, ${BG} 90%);
   z-index: 1;
 `
-const TextWrapper = styled.div`
+const ChildWrapper = styled.div`
   position: absolute;
-  gap: 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  h3 {
-    font-size: 32px;
-    color: #57575789;
-  }
-  p {
-    font-size: 15px;
-    color: #57575789;
-  }
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 `
+
 const Handle = styled.div<{ pos: number }>`
-  width: 8.5%;
-  height: 8.5%;
+  width: 7.5%;
+  height: 7.5%;
   min-width: 10px;
   min-height: 10px;
   border-radius: 50%;
@@ -91,38 +77,25 @@ const Handle = styled.div<{ pos: number }>`
   box-shadow: 0 0 15px 0px #0084ff7d;
   transform: translateY(${({ pos }) => pos}px);
 `
-const Grab = styled.div`
+const StyledDial = styled.div`
   position: absolute;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  z-index: 10;
+  z-index: -1;
   cursor: pointer;
-`
-const NotchesLight = styled(Notches)`
-  filter: blur(4px);
-  opacity: 0;
+  border-radius: 50%;
+  background: ${BG};
+  box-shadow: 20px 20px 100px #bebebe, -20px -20px 100px #ffffff;
 `
 const Outer = styled.div<{ isDragging: boolean }>`
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
-  background-color: #c5c5c5;
+  background-color: ${BG};
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid rgba(255, 255, 255, 0.187);
-  ${Notches} {
-    opacity: ${({ isDragging }) => (isDragging ? 0.75 : 0.4)};
-  }
-  ${NotchesLight} {
-    opacity: ${({ isDragging }) => (isDragging ? 0.75 : 0)};
-  }
-  :hover {
-    ${Notches} {
-      opacity: 0.75;
-    }
-  }
 `
 
 export const Dial: FC<{
@@ -132,17 +105,19 @@ export const Dial: FC<{
   initial?: number
   showNotches?: boolean
   realisticDrag?: boolean
+  children?: JSX.Element
+  degrees: number
+  setDegrees: React.Dispatch<React.SetStateAction<number>>
 }> = ({
   max = 360,
   min = 0,
   increment = 45,
-  initial = 0,
   showNotches = true,
   realisticDrag = false,
+  degrees = 0,
+  setDegrees,
+  children,
 }) => {
-  const [deg, setDeg] = useState(
-    min > initial ? min : max < initial ? max : initial
-  )
   const [handlePos, setHandlePos] = useState(0)
   const [diff, setDiff] = useState(0)
   const dragRef = useRef(null)
@@ -152,8 +127,8 @@ export const Dial: FC<{
   const [isDragging, setIsDragging] = useState(false)
 
   const handleRealisticDrag = (f: DraggableEvent, d: DraggableData) => {
-    const y = deg < 180 ? -d.deltaY : d.deltaY
-    const x = deg < 90 || deg > 270 ? -d.deltaX : d.deltaX
+    const y = degrees < 180 ? -d.deltaY : d.deltaY
+    const x = degrees < 90 || degrees > 270 ? -d.deltaX : d.deltaX
     setDiff((prev) => prev + x / 2 + y / 2)
   }
 
@@ -172,11 +147,11 @@ export const Dial: FC<{
     const increase = increment * Math.floor(Math.abs(diff) / increment)
     if (diff >= increment) {
       setDiff(0)
-      setDeg((prev) => (prev + increase <= max ? prev + increase : prev))
+      setDegrees((prev) => (prev + increase <= max ? prev + increase : prev))
     }
     if (diff <= -increment) {
       setDiff(0)
-      setDeg((prev) => (prev - increase >= min ? prev - increase : prev))
+      setDegrees((prev) => (prev - increase >= min ? prev - increase : prev))
     }
   }, [diff])
 
@@ -186,33 +161,50 @@ export const Dial: FC<{
         {showNotches && (
           <>
             <Gradient />
-            <Notches />
-            {/* <NotchesLight /> */}
+            <svg
+              viewBox="0 0 200 200"
+              style={{
+                position: `absolute`,
+                width: `80%`,
+                height: `80%`,
+                borderRadius: `50%`,
+              }}
+            >
+              <circle
+                cx="50%"
+                cy="50%"
+                r="50%"
+                transform="rotate(90 100 100)"
+                fill="none"
+                stroke={isDragging ? `#0084ff` : `#242424`}
+                strokeDasharray={`1, 18`}
+                strokeWidth="4"
+                opacity={isDragging ? 0.75 : 0.3}
+                strokeLinecap="butt"
+              />
+            </svg>
           </>
         )}
-        <CircleDiv progress={(deg / 360) * 100}>
-          <Container>
-            <Inner
+        <CircleDiv progress={(degrees / 360) * 100}>
+          <DialContainer>
+            <HandleContainer
               style={{
-                transform: `rotate(${deg}deg)`,
+                transform: `rotate(${degrees}deg)`,
               }}
               ref={dialRef}
             >
               <Handle ref={handleRef} pos={handlePos} />
-            </Inner>
-            <TextWrapper>
-              <h3>{Math.round(deg)}</h3>
-              <p>Degrees</p>
-            </TextWrapper>
+            </HandleContainer>
+            <ChildWrapper>{children}</ChildWrapper>
             <DraggableCore
               onStart={() => setIsDragging(true)}
               onStop={() => setIsDragging(false)}
               onDrag={realisticDrag ? handleRealisticDrag : handleDrag}
               ref={dragRef}
             >
-              <Grab />
+              <StyledDial />
             </DraggableCore>
-          </Container>
+          </DialContainer>
         </CircleDiv>
       </Outer>
     </Wrapper>
