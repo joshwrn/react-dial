@@ -1,5 +1,5 @@
 import type { CSSProperties, FC } from "react"
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 
 import type { DraggableData, DraggableEvent } from "react-draggable"
 import { DraggableCore } from "react-draggable"
@@ -30,18 +30,6 @@ const DialContainer = styled.div`
   position: relative;
   z-index: 2;
 `
-const HandleContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  transition: transform 0.15s;
-  pointer-events: none;
-`
 const Gradient = styled.div`
   width: 100%;
   height: 100%;
@@ -60,7 +48,17 @@ const ChildWrapper = styled.div`
   height: 100%;
   pointer-events: none;
 `
-
+const HandleContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: transform 0.15s;
+`
 const Handle = styled.div<{ pos: number }>`
   width: 7.5%;
   height: 7.5%;
@@ -94,6 +92,36 @@ const Outer = styled.div<{ isDragging: boolean }>`
   justify-content: center;
   align-items: center;
 `
+const toDeg = (rad: number) => {
+  return rad * (180 / Math.PI)
+}
+
+const getDegFromQuadrant = (
+  circ: { x: number; y: number },
+  deg: number,
+  lastQuadrant: number,
+  setLastQuadrant: React.Dispatch<React.SetStateAction<number>>
+): number => {
+  const q1 = circ.x >= 0 && circ.y >= 0
+  const q2 = circ.x <= 0 && circ.y >= 0
+  const q3 = circ.x <= 0 && circ.y <= 0
+  const q4 = circ.x >= 0 && circ.y <= 0
+  if (q1 || q4) {
+    if (lastQuadrant === 2) {
+      return -90 - deg
+    }
+    setLastQuadrant(q1 ? 1 : 4)
+    return 270 - deg
+  }
+  if (q2 || q3) {
+    if (lastQuadrant === 1) {
+      return 450 + deg
+    }
+    setLastQuadrant(q2 ? 2 : 3)
+    return 90 + deg
+  }
+  return 0
+}
 
 export const Dial: FC<{
   max?: number
@@ -102,12 +130,14 @@ export const Dial: FC<{
   initial?: number
   showNotches?: boolean
   realisticDrag?: boolean
+  debugRealisticDrag?: boolean
   children?: JSX.Element
   degrees: number
   setDegrees: React.Dispatch<React.SetStateAction<number>>
   showProgress?: boolean
   dialStyle?: CSSProperties
   handleStyle?: CSSProperties
+  mustUseHandle: boolean
 }> = ({
   max = 360,
   min = 0,
@@ -120,44 +150,66 @@ export const Dial: FC<{
   showProgress = true,
   dialStyle,
   handleStyle,
+  debugRealisticDrag = false,
+  mustUseHandle = false,
 }) => {
   const [handlePos, setHandlePos] = useState(0)
-  const [diff, setDiff] = useState(0)
+  const diff = useRef(0)
   const dragRef = useRef(null)
   const handleRef = useRef<HTMLDivElement>(null)
+  const handleDragRef = useRef(null)
   const dialRef = useRef<HTMLDivElement>(null)
   const size = useSize(dialRef)
   const [isDragging, setIsDragging] = useState(false)
+  const [debugCoords, setDebugCoords] = useState({ x: 0, y: 0 })
+  const [lastQuadrant, setLastQuadrant] = useState(2)
 
-  const handleRealisticDrag = (f: DraggableEvent, d: DraggableData) => {
-    const y = degrees < 180 ? -d.deltaY : d.deltaY
-    const x = degrees < 90 || degrees > 270 ? -d.deltaX : d.deltaX
-    setDiff((prev) => prev + x / 2 + y / 2)
+  const turnDialRealistic = (f: DraggableEvent, d: DraggableData) => {
+    const e = f as MouseEvent
+    if (!dialRef.current) return
+    const ref = dialRef.current
+    const box = ref.getBoundingClientRect()
+    const centerPoint = {
+      y: box.top + box.height / 2,
+      x: box.left + box.width / 2,
+    }
+    const mouse = { x: e.clientX, y: e.clientY }
+    const point = { x: centerPoint.x - mouse.x, y: centerPoint.y - mouse.y }
+    const sin = point.y / Math.sqrt(Math.pow(point.x, 2) + Math.pow(point.y, 2))
+    const cos = point.x / Math.sqrt(Math.pow(point.x, 2) + Math.pow(point.y, 2))
+    debugRealisticDrag &&
+      setDebugCoords({ x: -cos * (box.height / 2), y: -sin * (box.height / 2) })
+    const theta = Math.asin(sin)
+    const degrees = getDegFromQuadrant(
+      { x: -cos, y: -sin },
+      toDeg(theta),
+      lastQuadrant,
+      setLastQuadrant
+    )
+    const increase = increment * Math.floor(degrees / increment)
+    setDegrees(increase > max ? max : increase < min ? min : increase)
   }
 
-  const handleDrag = (f: DraggableEvent, d: DraggableData) => {
-    setDiff((prev) => prev + d.deltaX + -d.deltaY)
+  const turnDial = (f: DraggableEvent, d: DraggableData) => {
+    diff.current = diff.current + d.deltaX + -d.deltaY
+    const increase = increment * Math.floor(Math.abs(diff.current) / increment)
+    if (diff.current >= increment) {
+      diff.current = 0
+      setDegrees((prev) => (prev + increase <= max ? prev + increase : prev))
+      return
+    }
+    if (diff.current <= -increment) {
+      diff.current = 0
+      setDegrees((prev) => (prev - increase >= min ? prev - increase : prev))
+      return
+    }
   }
 
   useEffect(() => {
     const h = handleRef.current
     if (!h || !size) return
-
     setHandlePos(size.width / 2 - h.offsetHeight)
   }, [size, showProgress])
-
-  useEffect(() => {
-    if (!handleRef.current) return
-    const increase = increment * Math.floor(Math.abs(diff) / increment)
-    if (diff >= increment) {
-      setDiff(0)
-      setDegrees((prev) => (prev + increase <= max ? prev + increase : prev))
-    }
-    if (diff <= -increment) {
-      setDiff(0)
-      setDegrees((prev) => (prev - increase >= min ? prev - increase : prev))
-    }
-  }, [diff])
 
   return (
     <Wrapper>
@@ -193,24 +245,45 @@ export const Dial: FC<{
           style={{
             width: `60%`,
             height: `60%`,
+            cursor: mustUseHandle ? `initial` : `pointer`,
           }}
         >
           <HandleContainer
             style={{
               transform: `rotate(${degrees}deg)`,
+              pointerEvents: mustUseHandle ? `all` : `none`,
             }}
-            ref={dialRef}
           >
-            <Handle style={handleStyle} ref={handleRef} pos={handlePos} />
+            <DraggableCore
+              onStart={() => setIsDragging(true)}
+              onStop={() => setIsDragging(false)}
+              onDrag={realisticDrag ? turnDialRealistic : turnDial}
+              ref={handleDragRef}
+            >
+              <Handle style={handleStyle} ref={handleRef} pos={handlePos} />
+            </DraggableCore>
           </HandleContainer>
+
           <ChildWrapper>{children}</ChildWrapper>
+          {debugRealisticDrag && realisticDrag && (
+            <div
+              style={{
+                position: `absolute`,
+                transform: `translate(${debugCoords.x}px, ${debugCoords.y}px)`,
+                background: `red`,
+                zIndex: 20,
+                width: `15px`,
+                height: `15px`,
+              }}
+            />
+          )}
           <DraggableCore
             onStart={() => setIsDragging(true)}
             onStop={() => setIsDragging(false)}
-            onDrag={realisticDrag ? handleRealisticDrag : handleDrag}
+            onDrag={realisticDrag ? turnDialRealistic : turnDial}
             ref={dragRef}
           >
-            <StyledDial style={dialStyle} />
+            <StyledDial ref={dialRef} style={dialStyle} />
           </DraggableCore>
           {showProgress && <CircleDiv progress={(degrees / 360) * 100} />}
         </DialContainer>

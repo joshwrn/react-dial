@@ -102,10 +102,12 @@ const TextWrapper = styled.div`
 const App = () => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(360)
-  const [increment, setIncrement] = useState(45)
+  const [increment, setIncrement] = useState(1)
   const [realisticDrag, setRealisticDrag] = useState(false)
+  const [debugRealisticDrag, setDebugRealisticDrag] = useState(false)
   const [degrees, setDegrees] = useState(0)
   const [showProgress, setShowProgress] = useState(true)
+  const [mustUseHandle, setMustUseHandle] = useState(false)
   return (
     <Wrapper>
       <Container>
@@ -117,6 +119,8 @@ const App = () => {
           degrees={degrees}
           setDegrees={setDegrees}
           showProgress={showProgress}
+          debugRealisticDrag={debugRealisticDrag}
+          mustUseHandle={mustUseHandle}
         >
           <TextWrapper>
             <h3>{Math.round(degrees)}</h3>
@@ -154,6 +158,24 @@ const App = () => {
           <input
             checked={realisticDrag}
             onChange={(e) => setRealisticDrag(e.target.checked)}
+            type="checkbox"
+          />
+        </div>
+        {realisticDrag && (
+          <div>
+            <p>Debug</p>
+            <input
+              checked={debugRealisticDrag}
+              onChange={(e) => setDebugRealisticDrag(e.target.checked)}
+              type="checkbox"
+            />
+          </div>
+        )}
+        <div>
+          <p>Must Use Handle</p>
+          <input
+            checked={mustUseHandle}
+            onChange={(e) => setMustUseHandle(e.target.checked)}
             type="checkbox"
           />
         </div>
