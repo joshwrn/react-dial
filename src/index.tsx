@@ -97,15 +97,15 @@ const toDeg = (rad: number) => {
 }
 
 const getDegFromQuadrant = (
-  circ: { x: number; y: number },
+  point: { x: number; y: number },
   deg: number,
   lastQuadrant: number,
   setLastQuadrant: React.Dispatch<React.SetStateAction<number>>
 ): number => {
-  const q1 = circ.x >= 0 && circ.y >= 0
-  const q2 = circ.x <= 0 && circ.y >= 0
-  const q3 = circ.x <= 0 && circ.y <= 0
-  const q4 = circ.x >= 0 && circ.y <= 0
+  const q1 = point.x >= 0 && point.y >= 0
+  const q2 = point.x <= 0 && point.y >= 0
+  const q3 = point.x <= 0 && point.y <= 0
+  const q4 = point.x >= 0 && point.y <= 0
   if (q1 || q4) {
     if (lastQuadrant === 2) {
       return -90 - deg

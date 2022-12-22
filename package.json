@@ -17,8 +17,9 @@
     "prepare": "dts build",
     "size": "size-limit",
     "start": "dts watch",
+    "example": "cd example && yarn start",
     "test": "dts test --passWithNoTests",
-    "deploy": "./example/deploy.sh"
+    "deploy": "cd example && yarn deploy"
   },
   "husky": {
     "hooks": {
