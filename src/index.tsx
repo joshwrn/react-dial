@@ -1,6 +1,8 @@
 import type { CSSProperties, FC } from "react"
 import React, { useEffect, useRef, useState } from "react"
 
+/** @jsx jsx */
+import { jsx, css } from "@emotion/react"
 import type { DraggableData, DraggableEvent } from "react-draggable"
 import { DraggableCore } from "react-draggable"
 import styled from "styled-components"
@@ -212,7 +214,11 @@ export const Dial: FC<{
   }, [size, showProgress])
 
   return (
-    <Wrapper>
+    <div
+      css={css`
+        border: 1px solid #ff4949;
+      `}
+    >
       <Outer isDragging={isDragging}>
         {showNotches && (
           <>
@@ -288,6 +294,6 @@ export const Dial: FC<{
           {showProgress && <CircleDiv progress={(degrees / 360) * 100} />}
         </DialContainer>
       </Outer>
-    </Wrapper>
+    </div>
   )
 }

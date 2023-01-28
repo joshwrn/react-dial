@@ -3,7 +3,8 @@
   "extends": "@tsconfig/create-react-app/tsconfig.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "target": "esnext"
+    "target": "esnext",
+    "types": ["@emotion/react/types/css-prop"]
   },
   "include": ["src", "types"]
 }

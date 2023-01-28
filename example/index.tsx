@@ -5,7 +5,7 @@ import * as React from "react"
 import * as ReactDOM from "react-dom"
 import styled from "styled-components"
 
-import { Dial } from "../."
+import { Dial } from "../src"
 
 const Wrapper = styled.div`
   display: flex;

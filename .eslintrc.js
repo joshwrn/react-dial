@@ -3,5 +3,6 @@ module.exports = {
   rules: {
     "max-len": `off`,
     "max-lines": `off`,
+    "react/no-unknown-property": `off`,
   },
 }
