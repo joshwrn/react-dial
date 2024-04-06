@@ -6,6 +6,7 @@ import * as ReactDOM from "react-dom"
 import styled from "styled-components"
 
 import { Dial } from "../."
+// import { Dial } from "../src/index"
 
 const Wrapper = styled.div`
   display: flex;
@@ -14,7 +15,7 @@ const Wrapper = styled.div`
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  background-color: #e0e0e0;
+  background-color: #111111;
   margin: 0;
   padding: 0;
   position: absolute;
@@ -40,7 +41,8 @@ const Inputs = styled.div`
   right: 50px;
   border-radius: 18px;
   padding: 15px;
-  background-color: #646464bc;
+  background-color: #1b1b1bbb;
+  border: 1px solid #ffffff3d;
   > div {
     display: flex;
     gap: 10px;
@@ -81,7 +83,7 @@ const Container = styled.div`
   }
 `
 
-const FC = `#57575789`
+const FC = `#ffffff88`
 
 const TextWrapper = styled.div`
   gap: 10px;
@@ -91,6 +93,7 @@ const TextWrapper = styled.div`
   align-items: center;
   h3 {
     font-size: 32px;
+    font-weight: 500;
     color: ${FC};
   }
   p {
@@ -103,7 +106,7 @@ const App = () => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(360)
   const [increment, setIncrement] = useState(1)
-  const [realisticDrag, setRealisticDrag] = useState(false)
+  const [realisticDrag, setRealisticDrag] = useState(true)
   const [debugRealisticDrag, setDebugRealisticDrag] = useState(false)
   const [degrees, setDegrees] = useState(0)
   const [showProgress, setShowProgress] = useState(true)

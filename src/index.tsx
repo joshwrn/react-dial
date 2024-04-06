@@ -7,7 +7,7 @@ import styled from "styled-components"
 
 import { CircleDiv, useSize } from "./Circle"
 
-const BG = `#e0e0e0`
+const BG = `#111111`
 
 const Wrapper = styled.div`
   display: flex;
@@ -81,7 +81,8 @@ const StyledDial = styled.div`
   cursor: pointer;
   border-radius: 50%;
   background: ${BG};
-  box-shadow: 20px 20px 100px #bebebe, -20px -20px 100px #ffffff;
+  box-shadow: 20px 20px 100px #000000, -20px -20px 100px #303030;
+  border: 1px solid #383838;
 `
 const Outer = styled.div<{ isDragging: boolean }>`
   width: 100%;
@@ -143,7 +144,7 @@ export const Dial: FC<{
   min = 0,
   increment = 45,
   showNotches = true,
-  realisticDrag = false,
+  realisticDrag = true,
   degrees = 0,
   setDegrees,
   children,
@@ -232,7 +233,7 @@ export const Dial: FC<{
                 r="50%"
                 transform="rotate(90 100 100)"
                 fill="none"
-                stroke={isDragging ? `#0084ff` : `#242424`}
+                stroke={isDragging ? `#0084ff` : `#dddddd`}
                 strokeDasharray={`1, 18`}
                 strokeWidth="4"
                 opacity={isDragging ? 0.75 : 0.3}

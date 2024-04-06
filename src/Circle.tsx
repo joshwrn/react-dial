@@ -127,7 +127,9 @@ const Wrapper = styled.div<{ size: string; cursor: string }>`
   align-items: center;
   position: absolute;
   flex-shrink: 0;
-  z-index: -5;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.7;
   width: ${({ size }) => size};
   height: ${({ size }) => size};
   cursor: ${({ cursor }) => cursor};

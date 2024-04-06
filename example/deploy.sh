@@ -14,7 +14,7 @@ cd dist
 
 git init
 # git checkout -b main
-git checkout main
+# git checkout main
 git add -A
 git commit -m 'deploy'
 
